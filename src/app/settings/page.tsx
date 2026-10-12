@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Settings,
   Building,
@@ -29,6 +30,8 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState("Asia/Kolkata");
   const [currency, setCurrency] = useState("INR");
 
+  const [accessDenied, setAccessDenied] = useState(false);
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -37,6 +40,11 @@ export default function SettingsPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/settings");
+      if (res.status === 403) {
+        setAccessDenied(true);
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (data.agency) {
         setAgency(data.agency);
@@ -49,6 +57,7 @@ export default function SettingsPage() {
       setAuditLogs(data.auditLogs || []);
     } catch (e) {
       console.error(e);
+      setAccessDenied(true);
     } finally {
       setLoading(false);
     }
@@ -98,6 +107,28 @@ export default function SettingsPage() {
       setResetting(false);
     }
   };
+
+  if (accessDenied) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-2xl p-12 text-center max-w-xl mx-auto mt-12 space-y-4">
+        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+          <ShieldCheck size={32} />
+        </div>
+        <h2 className="text-xl font-bold text-red-900">Access Restricted</h2>
+        <p className="text-sm text-red-700">
+          Agency System Configuration, Integrations & Audit Logs are strictly restricted to the Super Admin (Agency Owner) role.
+        </p>
+        <div className="pt-2">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition"
+          >
+            Return to My Workspace
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

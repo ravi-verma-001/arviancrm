@@ -228,92 +228,86 @@ export function Header({ user }: HeaderProps) {
             )}
           </div>
 
-          {/* Demo Role Quick-Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setRoleSwitcherOpen(!roleSwitcherOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition"
-              title="Switch demo account to test different roles"
-            >
-              <LogIn size={13} className="text-blue-600" />
-              <span className="hidden sm:inline">Switch Role</span>
-            </button>
+          {/* Impersonate Staff / Demo Role Switcher - STRICTLY RESTRICTED TO SUPER_ADMIN ONLY */}
+          {user.role === "SUPER_ADMIN" && (
+            <div className="relative">
+              <button
+                onClick={() => setRoleSwitcherOpen(!roleSwitcherOpen)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition"
+                title="Super Admin Impersonation: View dashboard from staff perspective"
+              >
+                <LogIn size={13} className="text-blue-600" />
+                <span className="hidden sm:inline">View As Staff</span>
+              </button>
 
-            {roleSwitcherOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <p className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Test Role Perspectives
-                </p>
-                <div className="space-y-1">
-                  <button
-                    onClick={() => switchAccount("admin@arvianmarketing.com")}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">Aarav Sharma</p>
-                      <p className="text-[10px] text-slate-500">Agency Owner (Super Admin)</p>
-                    </div>
-                    <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">Admin</span>
-                  </button>
+              {roleSwitcherOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-200 p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2 py-1 flex items-center justify-between border-b border-slate-100 pb-1 mb-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Staff Impersonation Mode
+                    </p>
+                    <span className="text-[9px] bg-red-100 text-red-700 font-bold px-1 rounded">Admin Only</span>
+                  </div>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => switchAccount("rahul@arvianmarketing.com")}
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">Rahul Sharma</p>
+                        <p className="text-[10px] text-slate-500">Sales Executive (Telecaller 1)</p>
+                      </div>
+                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Sales</span>
+                    </button>
 
-                  <button
-                    onClick={() => switchAccount("rahul@arvianmarketing.com")}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">Rahul Sharma</p>
-                      <p className="text-[10px] text-slate-500">Sales Executive (Telecaller 1)</p>
-                    </div>
-                    <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Sales</span>
-                  </button>
+                    <button
+                      onClick={() => switchAccount("priya@arvianmarketing.com")}
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">Priya Patel</p>
+                        <p className="text-[10px] text-slate-500">Sales Executive (Telecaller 2)</p>
+                      </div>
+                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Sales</span>
+                    </button>
 
-                  <button
-                    onClick={() => switchAccount("priya@arvianmarketing.com")}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">Priya Patel</p>
-                      <p className="text-[10px] text-slate-500">Sales Executive (Telecaller 2)</p>
-                    </div>
-                    <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Sales</span>
-                  </button>
+                    <button
+                      onClick={() => switchAccount("arjun@arvianmarketing.com")}
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">Arjun Mehta</p>
+                        <p className="text-[10px] text-slate-500">Graphic Designer</p>
+                      </div>
+                      <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Design</span>
+                    </button>
 
-                  <button
-                    onClick={() => switchAccount("arjun@arvianmarketing.com")}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">Arjun Mehta</p>
-                      <p className="text-[10px] text-slate-500">Graphic Designer</p>
-                    </div>
-                    <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Design</span>
-                  </button>
+                    <button
+                      onClick={() => switchAccount("sneha@arvianmarketing.com")}
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">Sneha Rao</p>
+                        <p className="text-[10px] text-slate-500">Social Media Manager</p>
+                      </div>
+                      <span className="text-[10px] bg-pink-100 text-pink-700 px-1.5 py-0.5 rounded font-bold">SMM</span>
+                    </button>
 
-                  <button
-                    onClick={() => switchAccount("sneha@arvianmarketing.com")}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">Sneha Rao</p>
-                      <p className="text-[10px] text-slate-500">Social Media Manager</p>
-                    </div>
-                    <span className="text-[10px] bg-pink-100 text-pink-700 px-1.5 py-0.5 rounded font-bold">SMM</span>
-                  </button>
-
-                  <button
-                    onClick={() => switchAccount("karan@arvianmarketing.com")}
-                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-800">Karan Malhotra</p>
-                      <p className="text-[10px] text-slate-500">Meta Ads Manager</p>
-                    </div>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">Ads</span>
-                  </button>
+                    <button
+                      onClick={() => switchAccount("karan@arvianmarketing.com")}
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">Karan Malhotra</p>
+                        <p className="text-[10px] text-slate-500">Meta Ads Manager</p>
+                      </div>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">Ads</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

@@ -210,6 +210,12 @@ export async function GET(req: Request) {
   );
 
   return NextResponse.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      employeeId: user.employeeId,
+    },
     range,
     dateBounds: { from: startDate, to: endDate },
     leads: {

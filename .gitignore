@@ -8,6 +8,7 @@ node_modules/
 out/
 
 # Environment files
+.env
 .env*.local
 
 # Database

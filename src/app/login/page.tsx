@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showDevLogins, setShowDevLogins] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -136,49 +137,69 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* 1-Click Role Switcher Demo */}
+          {/* Development / Testing Quick Switcher - Collapsible & Disabled in Production */}
           <div className="mt-8 pt-6 border-t border-slate-200">
-            <div className="flex items-center gap-1 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-              <ShieldCheck size={14} className="text-blue-600" />
-              <span>One-Click Role Switcher</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => loginAsDemo("admin@arvianmarketing.com", "admin123")}
-                className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
-              >
-                <p className="font-semibold text-slate-800">Super Admin</p>
-                <p className="text-[10px] text-slate-500">Agency Owner</p>
-              </button>
+            <button
+              type="button"
+              onClick={() => setShowDevLogins(!showDevLogins)}
+              className="w-full flex items-center justify-between text-xs text-slate-500 hover:text-slate-800 transition py-1"
+            >
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-amber-600" />
+                <span className="font-semibold text-slate-600">Dev Testing Accounts (Demo Only)</span>
+              </div>
+              <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">
+                {showDevLogins ? "Hide" : "Show (Local Testing)"}
+              </span>
+            </button>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Production Mode: These shortcuts are automatically disabled. Employees can only log in using their own private password.
+            </p>
 
-              <button
-                type="button"
-                onClick={() => loginAsDemo("rahul@arvianmarketing.com", "password123")}
-                className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
-              >
-                <p className="font-semibold text-slate-800">Rahul (Sales)</p>
-                <p className="text-[10px] text-slate-500">Telecaller / Sales</p>
-              </button>
+            {showDevLogins && (
+              <div className="mt-3 pt-3 border-t border-slate-100 animate-in fade-in duration-150">
+                <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2 font-medium">
+                  🔒 <strong>Security Notice:</strong> In real deployment, only the email/password fields above are shown. Salespersons cannot escalate their role.
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => loginAsDemo("admin@arvianmarketing.com", "admin123")}
+                    className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
+                  >
+                    <p className="font-semibold text-slate-800">Super Admin</p>
+                    <p className="text-[10px] text-slate-500">Agency Owner</p>
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => loginAsDemo("arjun@arvianmarketing.com", "password123")}
-                className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
-              >
-                <p className="font-semibold text-slate-800">Arjun (Design)</p>
-                <p className="text-[10px] text-slate-500">Graphic Designer</p>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => loginAsDemo("rahul@arvianmarketing.com", "password123")}
+                    className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
+                  >
+                    <p className="font-semibold text-slate-800">Rahul (Sales)</p>
+                    <p className="text-[10px] text-slate-500">Telecaller / Sales</p>
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => loginAsDemo("karan@arvianmarketing.com", "password123")}
-                className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
-              >
-                <p className="font-semibold text-slate-800">Karan (Ads)</p>
-                <p className="text-[10px] text-slate-500">Meta Ads Manager</p>
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => loginAsDemo("arjun@arvianmarketing.com", "password123")}
+                    className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
+                  >
+                    <p className="font-semibold text-slate-800">Arjun (Design)</p>
+                    <p className="text-[10px] text-slate-500">Graphic Designer</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => loginAsDemo("karan@arvianmarketing.com", "password123")}
+                    className="p-2 text-left bg-slate-50 hover:bg-blue-50 hover:border-blue-300 border border-slate-200 rounded-lg transition"
+                  >
+                    <p className="font-semibold text-slate-800">Karan (Ads)</p>
+                    <p className="text-[10px] text-slate-500">Meta Ads Manager</p>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

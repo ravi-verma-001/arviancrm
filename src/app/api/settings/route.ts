@@ -8,6 +8,14 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // STRICT PRIVACY RULE: Settings and System configs are strictly SUPER_ADMIN only
+  if (user.role !== "SUPER_ADMIN") {
+    return NextResponse.json(
+      { error: "Forbidden: Admin settings are restricted to Super Admin role." },
+      { status: 403 }
+    );
+  }
+
   const agency = await prisma.agency.findUnique({
     where: { id: user.agencyId },
     include: {

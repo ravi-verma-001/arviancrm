@@ -41,47 +41,132 @@ export function Sidebar({ user }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const isAdmin = user.role === "SUPER_ADMIN";
+  const isSales = user.role === "SALES_EXECUTIVE";
+  const isDesigner = user.role === "GRAPHIC_DESIGNER";
+  const isSMM = user.role === "SOCIAL_MEDIA_MANAGER";
+  const isMediaBuyer = user.role === "META_ADS_MANAGER";
 
-  const navigation = [
-    {
-      group: "CORE",
-      items: [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { name: "Leads CRM", href: "/leads", icon: Users2 },
-        { name: "Follow-ups", href: "/follow-ups", icon: PhoneCall },
-        { name: "Content Calendar", href: "/content-calendar", icon: CalendarDays },
-      ],
-    },
-    {
-      group: "MARKETING",
-      items: [
-        { name: "Internal Meta Ads", href: "/campaigns", icon: Target },
-        { name: "Clients & Workspaces", href: "/clients", icon: Briefcase },
-        { name: "Projects & Tasks", href: "/projects", icon: CheckSquare },
-      ],
-    },
-    {
-      group: "AGENCY OPS",
-      items: [
-        { name: "Employee Directory", href: "/employees", icon: UserCheck },
-        { name: "Attendance Log", href: "/attendance", icon: Clock },
-        ...(isAdmin
-          ? [
-              { name: "Payroll & Salaries", href: "/payroll", icon: CircleDollarSign },
-              { name: "Finance & Invoices", href: "/finance", icon: Receipt },
-            ]
-          : []),
-      ],
-    },
-    {
-      group: "TOOLS & ADMIN",
-      items: [
-        { name: "Import & Export", href: "/import-export", icon: FileSpreadsheet },
-        { name: "Agency Reports", href: "/reports", icon: BarChart3 },
-        { name: "Admin Settings", href: "/settings", icon: Settings },
-      ],
-    },
-  ];
+  // Build role-based navigation groups
+  const navigation = isAdmin
+    ? [
+        {
+          group: "CORE",
+          items: [
+            { name: "Executive Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "Leads CRM", href: "/leads", icon: Users2 },
+            { name: "Follow-ups", href: "/follow-ups", icon: PhoneCall },
+            { name: "Content Calendar", href: "/content-calendar", icon: CalendarDays },
+          ],
+        },
+        {
+          group: "MARKETING",
+          items: [
+            { name: "Internal Meta Ads", href: "/campaigns", icon: Target },
+            { name: "Clients & Workspaces", href: "/clients", icon: Briefcase },
+            { name: "Projects & Tasks", href: "/projects", icon: CheckSquare },
+          ],
+        },
+        {
+          group: "AGENCY OPS",
+          items: [
+            { name: "Employee Directory", href: "/employees", icon: UserCheck },
+            { name: "Attendance Log", href: "/attendance", icon: Clock },
+            { name: "Payroll & Salaries", href: "/payroll", icon: CircleDollarSign },
+            { name: "Finance & Invoices", href: "/finance", icon: Receipt },
+          ],
+        },
+        {
+          group: "TOOLS & ADMIN",
+          items: [
+            { name: "Import & Export", href: "/import-export", icon: FileSpreadsheet },
+            { name: "Agency Reports", href: "/reports", icon: BarChart3 },
+            { name: "Admin Settings", href: "/settings", icon: Settings },
+          ],
+        },
+      ]
+    : isSales
+    ? [
+        {
+          group: "SALES WORKSPACE",
+          items: [
+            { name: "Sales Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "My Leads Pipeline", href: "/leads", icon: Users2 },
+            { name: "Scheduled Calls", href: "/follow-ups", icon: PhoneCall },
+            { name: "Assigned Tasks", href: "/projects", icon: CheckSquare },
+          ],
+        },
+        {
+          group: "DAILY OPS",
+          items: [
+            { name: "My Attendance", href: "/attendance", icon: Clock },
+          ],
+        },
+      ]
+    : isDesigner
+    ? [
+        {
+          group: "CREATIVE WORKSPACE",
+          items: [
+            { name: "Creative Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "Design Projects", href: "/projects", icon: CheckSquare },
+            { name: "Content Calendar", href: "/content-calendar", icon: CalendarDays },
+            { name: "Client Workspaces", href: "/clients", icon: Briefcase },
+          ],
+        },
+        {
+          group: "DAILY OPS",
+          items: [
+            { name: "My Attendance", href: "/attendance", icon: Clock },
+          ],
+        },
+      ]
+    : isSMM
+    ? [
+        {
+          group: "SOCIAL MEDIA WORKSPACE",
+          items: [
+            { name: "SMM Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "Content Calendar", href: "/content-calendar", icon: CalendarDays },
+            { name: "Client Accounts", href: "/clients", icon: Briefcase },
+            { name: "Social Tasks", href: "/projects", icon: CheckSquare },
+          ],
+        },
+        {
+          group: "DAILY OPS",
+          items: [
+            { name: "My Attendance", href: "/attendance", icon: Clock },
+          ],
+        },
+      ]
+    : isMediaBuyer
+    ? [
+        {
+          group: "ADS WORKSPACE",
+          items: [
+            { name: "Ads Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "Internal Meta Ads", href: "/campaigns", icon: Target },
+            { name: "Ad Leads CRM", href: "/leads", icon: Users2 },
+            { name: "Client Ad Accounts", href: "/clients", icon: Briefcase },
+            { name: "Ad Tasks", href: "/projects", icon: CheckSquare },
+          ],
+        },
+        {
+          group: "DAILY OPS",
+          items: [
+            { name: "My Attendance", href: "/attendance", icon: Clock },
+          ],
+        },
+      ]
+    : [
+        {
+          group: "WORKSPACE",
+          items: [
+            { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { name: "Projects & Tasks", href: "/projects", icon: CheckSquare },
+            { name: "My Attendance", href: "/attendance", icon: Clock },
+          ],
+        },
+      ];
 
   const handleLogout = async () => {
     try {
