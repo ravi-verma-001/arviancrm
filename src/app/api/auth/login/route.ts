@@ -90,10 +90,17 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("Login error:", error);
+    const msg = error?.message || "";
+    if (msg.includes("DATABASE_URL") || msg.includes("Can't reach database") || msg.includes("P1001") || msg.includes("P1017")) {
+      return NextResponse.json(
+        { error: "Database connection failed. Please ensure DATABASE_URL and DIRECT_URL are configured in your hosting environment variables." },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
-      { error: "Internal server error during authentication" },
+      { error: "Authentication failed. " + (error?.message || "Internal server error") },
       { status: 500 }
     );
   }
