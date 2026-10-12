@@ -1,0 +1,519 @@
+// Prisma schema for Arvian Marketing CRM
+// Configured for SQLite for immediate zero-config local development and testing.
+// A corresponding PostgreSQL / Supabase migration is provided in prisma/supabase_schema.sql.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Agency {
+  id          String   @id @default(uuid())
+  name        String   @default("Arvian Marketing")
+  logo        String?
+  timezone    String   @default("Asia/Kolkata")
+  currency    String   @default("INR")
+  email       String   @default("contact@arvianmarketing.com")
+  phone       String?  @default("+91 98765 43210")
+  website     String?  @default("https://arvianmarketing.com")
+  address     String?  @default("Mumbai, Maharashtra, India")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users             User[]
+  leads             Lead[]
+  clients           Client[]
+  campaigns         Campaign[]
+  projects          Project[]
+  invoices          Invoice[]
+  expenses          Expense[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  integrationConfigs IntegrationConfig[]
+}
+
+model User {
+  id              String    @id @default(uuid())
+  agencyId        String
+  employeeId      String    @unique // e.g. ARV-EMP-001
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            String    @default("SALES_EXECUTIVE") // SUPER_ADMIN, SALES_EXECUTIVE, GRAPHIC_DESIGNER, SOCIAL_MEDIA_MANAGER, META_ADS_MANAGER, CUSTOM
+  department      String    // Sales, Meta Ads, Social Media, Design, Web Dev, SEO, Management
+  designation     String
+  phone           String?
+  status          String    @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  dateOfJoining   DateTime  @default(now())
+  managerId       String?
+  workingHours    String    @default("10:00 AM - 7:00 PM IST")
+  leaveBalance    Int       @default(18)
+  emergencyContact String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  agency          Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  manager         User?     @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates    User[]    @relation("ManagerSubordinates")
+
+  assignedLeads   Lead[]    @relation("AssignedLeads")
+  leadActivities  LeadActivity[]
+  followUps       FollowUp[]
+  assignedTasks   Task[]    @relation("AssignedTasks")
+  createdTasks    Task[]    @relation("CreatedTasks")
+  assignedProjects Project[] @relation("ProjectOwner")
+  attendances     Attendance[]
+  leaveRequests   LeaveRequest[]
+  salaryRecords   SalaryRecord[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  clientCommunications ClientCommunication[]
+}
+
+model SalaryRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  monthlySalary   Float
+  allowances      Float    @default(0)
+  deductions      Float    @default(0)
+  advances        Float    @default(0)
+  netSalary       Float
+  payrollPeriod   String   // e.g. "October 2026"
+  paymentDate     DateTime?
+  paymentStatus   String   @default("PENDING") // PENDING, PAID, PROCESSING
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Attendance {
+  id              String   @id @default(uuid())
+  userId          String
+  date            String   // YYYY-MM-DD
+  checkInTime     DateTime?
+  checkOutTime    DateTime?
+  totalHours      Float    @default(0)
+  status          String   @default("PRESENT") // PRESENT, LATE, HALF_DAY, ABSENT, WFH, ON_LEAVE
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model LeaveRequest {
+  id              String   @id @default(uuid())
+  userId          String
+  startDate       DateTime
+  endDate         DateTime
+  leaveType       String   // CASUAL, SICK, PAID, UNPAID
+  reason          String
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedById    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Lead {
+  id                  String   @id @default(uuid())
+  customId            String   @unique // e.g. LD-1001
+  agencyId            String
+  contactName         String
+  phone               String
+  email               String?
+  companyName         String?
+  industry            String?
+  city                String?
+  website             String?
+  instagramHandle     String?
+  fbPageUrl           String?
+  source              String   @default("MANUAL") // META_ADS, INSTAGRAM_ORGANIC, FB_ORGANIC, WEBSITE_FORM, WHATSAPP, PHONE_CALL, REFERRAL, GOOGLE_ADS, SEO, MANUAL, OTHER
+  priority            String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status              String   @default("NEW")    // NEW, NOT_CONTACTED, CONTACTED, INTERESTED, QUALIFIED, FOLLOW_UP_REQUIRED, PROPOSAL_SENT, NEGOTIATION, WON, LOST, NOT_INTERESTED, INVALID_CONTACT, NURTURE_LATER
+  servicesInterested  String   @default("[]")    // JSON array: ["Meta Ads", "Instagram Management"]
+  budget              String?
+  previousMarketingExp String? // YES, NO, UNKNOWN
+  previousMetaAdsExp  String?  @default("UNKNOWN") // YES, NO, UNKNOWN
+  prevMetaDailyBudget Float?
+  prevMetaMonthlyBudget Float?
+  prevCampaignResults String?
+  adAccountNotes      String?
+  customerRequirements String?
+  objections          String?
+  competitorInfo      String?
+  notes               String?
+  assignedToId        String?
+  campaignId          String?
+  nextFollowUpDate    DateTime?
+  convertedToClientId String?  @unique
+  lostReason          String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  agency              Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  assignedTo          User?    @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  campaign            Campaign? @relation("CampaignLeads", fields: [campaignId], references: [id])
+  convertedClient     Client?  @relation("ConvertedClient", fields: [convertedToClientId], references: [id])
+
+  activities          LeadActivity[]
+  followUps           FollowUp[]
+}
+
+model LeadActivity {
+  id          String   @id @default(uuid())
+  leadId      String
+  userId      String?
+  type        String   // STATUS_CHANGE, NOTE, CALL, WHATSAPP, EMAIL, QUALIFICATION, ASSIGNMENT
+  notes       String
+  metadata    String?  // JSON string
+  createdAt   DateTime @default(now())
+
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+model FollowUp {
+  id                    String    @id @default(uuid())
+  leadId                String
+  assignedToId          String
+  scheduledAt           DateTime
+  type                  String    @default("CALL") // CALL, WHATSAPP, EMAIL, MEETING, OTHER
+  reminderIntervalMinutes Int     @default(15) // 30, 15, 5, 0
+  reminderSent          Boolean   @default(false)
+  status                String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED
+  attemptNumber         Int       @default(1)
+  notes                 String?
+  outcome               String?
+  nextAction            String?
+  completedAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  lead                  Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignedTo            User      @relation(fields: [assignedToId], references: [id])
+}
+
+model Client {
+  id                  String   @id @default(uuid())
+  customId            String   @unique // e.g. CLI-201
+  agencyId            String
+  businessName        String
+  primaryContact      String
+  phone               String
+  email               String?
+  address             String?
+  website             String?
+  industry            String?
+  fbPageUrl           String?
+  instagramHandle     String?
+  instagramFollowers  Int?     @default(0)
+  followersRecordedDate DateTime?
+  servicesPurchased   String   @default("[]") // JSON array: ["Meta Ads", "Instagram Management"]
+  contractStartDate   DateTime @default(now())
+  contractEndDate     DateTime?
+  renewalDate         DateTime?
+  accountManagerId    String?
+  monthlyServiceFee   Float    @default(0)
+  adBudget            Float    @default(0)
+  paymentTerms        String?  @default("Advance Monthly")
+  paymentStatus       String   @default("PAID") // PAID, PENDING, OVERDUE
+  status              String   @default("ACTIVE") // ACTIVE, INACTIVE, PAUSED
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  agency              Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  convertedFromLead   Lead?    @relation("ConvertedClient")
+
+  projects            Project[]
+  campaigns           Campaign[]
+  creativeAssets      ClientCreativeAsset[]
+  contentCalendar     ContentCalendarItem[]
+  invoices            Invoice[]
+  communications      ClientCommunication[]
+}
+
+model Campaign {
+  id                  String   @id @default(uuid())
+  agencyId            String
+  clientId            String?  // Null if internal Arvian agency campaign
+  isInternal          Boolean  @default(true) // true for Arvian lead-gen, false for client ads
+  name                String
+  objective           String   @default("LEADS") // LEADS, TRAFFIC, ENGAGEMENT, AWARENESS, SALES
+  platform            String   @default("META")
+  startDate           DateTime @default(now())
+  endDate             DateTime?
+  status              String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED
+  dailyBudget         Float    @default(0)
+  lifetimeBudget      Float?
+  actualSpend         Float    @default(0)
+  targetAudience      String?
+  targetLocation      String?  @default("India")
+  adCopyHeadline      String?
+  adCopyPrimary       String?
+  callToAction        String?  @default("Learn More")
+  creativeUrl         String?
+  landingPageUrl      String?
+  assignedEmployeeId  String?
+  notes               String?
+  metaCampaignId      String?  // Meta Marketing API external ID
+  lastSyncedAt        DateTime?
+  syncStatus          String   @default("MANUAL") // MANUAL, SYNCED, ERROR
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  agency              Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  client              Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  adSets              AdSet[]
+  dailyMetrics        CampaignDailyMetric[]
+  leads               Lead[]   @relation("CampaignLeads")
+}
+
+model AdSet {
+  id              String   @id @default(uuid())
+  campaignId      String
+  name            String
+  budget          Float    @default(0)
+  targetingNotes  String?
+  status          String   @default("ACTIVE")
+  metaAdSetId     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  ads             Ad[]
+}
+
+model Ad {
+  id              String   @id @default(uuid())
+  adSetId         String
+  name            String
+  creativeType    String   @default("IMAGE") // IMAGE, VIDEO, CAROUSEL, REEL
+  creativeUrl     String?
+  copyText        String?
+  headline        String?
+  callToAction    String?
+  status          String   @default("ACTIVE")
+  metaAdId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  adSet           AdSet    @relation(fields: [adSetId], references: [id], onDelete: Cascade)
+}
+
+model CampaignDailyMetric {
+  id                    String   @id @default(uuid())
+  campaignId            String
+  date                  String   // YYYY-MM-DD
+  spend                 Float    @default(0)
+  impressions           Int      @default(0)
+  reach                 Int      @default(0)
+  frequency             Float    @default(1.0)
+  linkClicks            Int      @default(0)
+  outboundClicks        Int      @default(0)
+  leads                 Int      @default(0)
+  messagingConversations Int     @default(0)
+  landingPageViews      Int      @default(0)
+  conversions           Int      @default(0)
+  revenue               Float    @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  campaign              Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, date])
+}
+
+model ClientCreativeAsset {
+  id                  String   @id @default(uuid())
+  clientId            String
+  campaignId          String?
+  title               String
+  creativeType        String   @default("IMAGE") // IMAGE, VIDEO, CAROUSEL, REEL, STORY
+  status              String   @default("BRIEF_PENDING") // BRIEF_PENDING, COPY_IN_PROGRESS, DESIGN_IN_PROGRESS, INTERNAL_REVIEW, CLIENT_APPROVAL_PENDING, APPROVED, REVISION_REQUIRED
+  fileUrl             String?
+  copyText            String?
+  headline            String?
+  version             Int      @default(1)
+  revisionNotes       String?
+  assignedDesignerId  String?
+  approvedBy          String?
+  approvedAt          DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model ContentCalendarItem {
+  id                  String   @id @default(uuid())
+  clientId            String
+  publishDate         DateTime
+  platform            String   @default("INSTAGRAM") // INSTAGRAM, FACEBOOK, LINKEDIN
+  postType            String   @default("POST") // POST, CAROUSEL, REEL, STORY, PROMOTIONAL, EDUCATIONAL, TESTIMONIAL
+  topic               String
+  caption             String?
+  hashtags            String?
+  creativeUrl         String?
+  assignedDesignerId  String?
+  assignedSmmId       String?
+  status              String   @default("IDEA") // IDEA, BRIEF_PENDING, CONTENT_PLANNING, COPY_IN_PROGRESS, DESIGN_IN_PROGRESS, INTERNAL_REVIEW, CLIENT_APPROVAL_PENDING, REVISION_REQUIRED, APPROVED, SCHEDULED, PUBLISHED, CANCELLED
+  publishedUrl        String?
+  performanceNotes    String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  client              Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id              String   @id @default(uuid())
+  agencyId        String
+  clientId        String?
+  name            String
+  serviceCategory String   @default("Meta Ads") // Meta Ads, Social Media, Web Development, SEO, Creative
+  ownerId         String?
+  startDate       DateTime @default(now())
+  endDate         DateTime?
+  status          String   @default("IN_PROGRESS") // PLANNING, IN_PROGRESS, REVIEW, COMPLETED, ON_HOLD
+  templateType    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  agency          Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  client          Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  owner           User?    @relation("ProjectOwner", fields: [ownerId], references: [id])
+
+  tasks           Task[]
+}
+
+model Task {
+  id                    String   @id @default(uuid())
+  projectId             String?
+  clientId              String?
+  title                 String
+  description           String?
+  assignedToId          String?
+  createdById           String?
+  startDate             DateTime @default(now())
+  dueDate               DateTime
+  priority              String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status                String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, WAITING_CLIENT, WAITING_REVIEW, BLOCKED, REVISION_REQUIRED, COMPLETED, CANCELLED
+  completionPercentage  Int      @default(0)
+  checklist             String   @default("[]") // JSON array of items: [{id, text, done}]
+  approvalStatus        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  project               Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo            User?    @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdBy             User?    @relation("CreatedTasks", fields: [createdById], references: [id])
+}
+
+model ClientCommunication {
+  id              String   @id @default(uuid())
+  clientId        String
+  authorId        String?
+  type            String   @default("NOTE") // CALL, WHATSAPP, EMAIL, MEETING, PROPOSAL, NOTE
+  notes           String
+  isInternalOnly  Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  author          User?    @relation(fields: [authorId], references: [id])
+}
+
+model Invoice {
+  id                String    @id @default(uuid())
+  invoiceNumber     String    @unique // e.g. INV-2026-001
+  agencyId          String
+  clientId          String
+  servicePeriod     String    // e.g. "October 2026"
+  invoiceAmount     Float
+  amountReceived    Float     @default(0)
+  outstandingAmount Float
+  dueDate           DateTime
+  paymentDate       DateTime?
+  paymentMethod     String?   // UPI, Bank Transfer, Card, Cash
+  paymentStatus     String    @default("PENDING") // DRAFT, SENT, PAID, PARTIALLY_PAID, OVERDUE
+  items             String    @default("[]") // JSON array
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  agency            Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  client            Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id              String   @id @default(uuid())
+  agencyId        String
+  category        String   // SALARIES, OFFICE_COWORKING, ADVERTISING, SOFTWARE_SUBSCRIPTIONS, UTILITIES, FREELANCERS, MISC
+  description     String
+  amount          Float
+  date            DateTime @default(now())
+  vendor          String?
+  receiptUrl      String?
+  isRecurring     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  agency          Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  agencyId    String
+  userId      String
+  category    String   // FOLLOW_UP, LEAD_ASSIGNMENT, TASK_ASSIGNMENT, TASK_DEADLINE, APPROVAL_REQUEST, PAYMENT_DUE, LEAVE_REQUEST, SYSTEM_ALERT
+  title       String
+  message     String
+  linkUrl     String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model IntegrationConfig {
+  id          String   @id @default(uuid())
+  agencyId    String
+  provider    String   // META_ADS, WHATSAPP, EMAIL_SMTP, GOOGLE_SHEETS
+  status      String   @default("DISCONNECTED") // CONNECTED, DISCONNECTED, ERROR
+  settings    String   @default("{}") // JSON config (credentials, tokens, etc.)
+  lastChecked DateTime?
+  lastError   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, provider])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  agencyId    String
+  userId      String?
+  action      String   // LOGIN, CREATE, UPDATE, DELETE, EXPORT, IMPORT
+  module      String   // LEADS, CLIENTS, CAMPAIGNS, FINANCE, EMPLOYEES, SETTINGS
+  details     String?  // JSON string or description
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id])
+}
