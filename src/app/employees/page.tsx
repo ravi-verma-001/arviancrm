@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import {
   UserCheck,
   Plus,
-  Search,
-  Phone,
   Mail,
   Clock,
   ShieldCheck,
   Briefcase,
-  TrendingUp,
+  Pencil,
+  Trash2,
+  X,
 } from "lucide-react";
 import { formatDateIST } from "@/lib/utils";
 
@@ -18,15 +18,28 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deptFilter, setDeptFilter] = useState("ALL");
-  const [isAddOpen, setIsAddOpen] = useState(false);
 
-  // Form states
+  // Add modal
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formEmpId, setFormEmpId] = useState("");
   const [formDept, setFormDept] = useState("Sales / Telecalling");
   const [formRole, setFormRole] = useState("SALES_EXECUTIVE");
   const [formDesignation, setFormDesignation] = useState("Sales Representative");
+  const [formPhone, setFormPhone] = useState("");
+
+  // Edit modal
+  const [editEmp, setEditEmp] = useState<any | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editDept, setEditDept] = useState("");
+  const [editDesignation, setEditDesignation] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editHours, setEditHours] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
@@ -47,6 +60,7 @@ export default function EmployeesPage() {
     }
   };
 
+  // ── Add Employee ─────────────────────────────────────────
   const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -60,17 +74,79 @@ export default function EmployeesPage() {
           department: formDept,
           role: formRole,
           designation: formDesignation,
+          phone: formPhone,
         }),
       });
       if (res.ok) {
         setIsAddOpen(false);
-        setFormName("");
-        setFormEmail("");
-        setFormEmpId("");
+        setFormName(""); setFormEmail(""); setFormEmpId(""); setFormPhone("");
         fetchEmployees();
       } else {
         const data = await res.json();
         alert(data.error || "Failed to add employee");
+      }
+    } catch {
+      alert("Network error");
+    }
+  };
+
+  // ── Open Edit Modal ────────────────────────────────────
+  const openEdit = (emp: any) => {
+    setEditEmp(emp);
+    setEditName(emp.name);
+    setEditEmail(emp.email);
+    setEditPhone(emp.phone || "");
+    setEditDept(emp.department);
+    setEditDesignation(emp.designation);
+    setEditRole(emp.role);
+    setEditStatus(emp.status);
+    setEditHours(emp.workingHours);
+  };
+
+  // ── Save Edit ──────────────────────────────────────────
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editEmp) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/employees/${editEmp.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName,
+          email: editEmail,
+          phone: editPhone,
+          department: editDept,
+          designation: editDesignation,
+          role: editRole,
+          status: editStatus,
+          workingHours: editHours,
+        }),
+      });
+      if (res.ok) {
+        setEditEmp(null);
+        fetchEmployees();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to update employee");
+      }
+    } catch {
+      alert("Network error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Delete Employee ────────────────────────────────────
+  const handleDelete = async (emp: any) => {
+    if (!confirm(`Are you sure you want to remove ${emp.name} from the system?`)) return;
+    try {
+      const res = await fetch(`/api/employees/${emp.id}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchEmployees();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete employee");
       }
     } catch {
       alert("Network error");
@@ -101,13 +177,11 @@ export default function EmployeesPage() {
       </div>
 
       {/* Security Privacy Notice */}
-      <div className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={16} className="text-blue-600 shrink-0" />
-          <span>
-            <strong>Salary & Compensation Privacy Enforced:</strong> Financial payroll records are strictly restricted to Super Admin and never exposed in the general employee directory.
-          </span>
-        </div>
+      <div className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center gap-2">
+        <ShieldCheck size={16} className="text-blue-600 shrink-0" />
+        <span>
+          <strong>Salary &amp; Compensation Privacy Enforced:</strong> Financial payroll records are strictly restricted to Super Admin and never exposed in the general employee directory.
+        </span>
       </div>
 
       {/* Filter Tabs */}
@@ -130,6 +204,10 @@ export default function EmployeesPage() {
       {/* Employees Grid */}
       {loading ? (
         <div className="p-12 text-center text-sm text-slate-400">Loading directory...</div>
+      ) : employees.length === 0 ? (
+        <div className="p-12 text-center text-sm text-slate-400">
+          No employees found. Add your first team member!
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {employees.map((emp) => (
@@ -148,9 +226,24 @@ export default function EmployeesPage() {
                       <p className="text-[11px] text-slate-500">{emp.designation}</p>
                     </div>
                   </div>
-                  <span className="font-mono text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                    {emp.employeeId}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => openEdit(emp)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                      title="Edit Employee"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => handleDelete(emp)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                      title="Remove Employee"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-3.5 space-y-1.5 text-xs text-slate-600">
@@ -187,63 +280,60 @@ export default function EmployeesPage() {
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
                 <span>Joined: {formatDateIST(emp.dateOfJoining)}</span>
-                <span className="text-emerald-600 font-semibold">• Active</span>
+                <span className={`font-semibold ${emp.status === "ACTIVE" ? "text-emerald-600" : "text-red-500"}`}>
+                  • {emp.status === "ACTIVE" ? "Active" : emp.status}
+                </span>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* ADD EMPLOYEE MODAL */}
+      {/* ── ADD EMPLOYEE MODAL ── */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Add Agency Staff Member</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Add Agency Staff Member</h3>
+              <button onClick={() => setIsAddOpen(false)} className="text-slate-400 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
             <form onSubmit={handleCreateEmployee} className="space-y-3 text-xs">
               <div>
                 <label className="block font-semibold text-slate-700">Full Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
+                <input type="text" required value={formName} onChange={(e) => setFormName(e.target.value)}
                   placeholder="e.g. Ankit Sharma"
-                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none"
-                />
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
               </div>
 
               <div>
                 <label className="block font-semibold text-slate-700">Work Email *</label>
-                <input
-                  type="email"
-                  required
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  placeholder="ankit@arvianmarketing.com"
-                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none"
-                />
+                <input type="email" required value={formEmail} onChange={(e) => setFormEmail(e.target.value)}
+                  placeholder="ankit@yourcompany.com"
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700">Employee ID *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formEmpId}
-                    onChange={(e) => setFormEmpId(e.target.value)}
-                    placeholder="ARV-EMP-105"
-                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none font-mono"
-                  />
+                  <input type="text" required value={formEmpId} onChange={(e) => setFormEmpId(e.target.value)}
+                    placeholder="ARV-EMP-102"
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none font-mono focus:border-blue-400" />
                 </div>
+                <div>
+                  <label className="block font-semibold text-slate-700">Phone</label>
+                  <input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+                </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700">Role</label>
-                  <select
-                    value={formRole}
-                    onChange={(e) => setFormRole(e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none"
-                  >
+                  <select value={formRole} onChange={(e) => setFormRole(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none">
                     <option value="SALES_EXECUTIVE">Sales / Telecaller</option>
                     <option value="GRAPHIC_DESIGNER">Graphic Designer</option>
                     <option value="SOCIAL_MEDIA_MANAGER">Social Media Manager</option>
@@ -251,41 +341,111 @@ export default function EmployeesPage() {
                     <option value="SUPER_ADMIN">Agency Super Admin</option>
                   </select>
                 </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700">Department</label>
-                <input
-                  type="text"
-                  value={formDept}
-                  onChange={(e) => setFormDept(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none"
-                />
+                <div>
+                  <label className="block font-semibold text-slate-700">Department</label>
+                  <input type="text" value={formDept} onChange={(e) => setFormDept(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+                </div>
               </div>
 
               <div>
                 <label className="block font-semibold text-slate-700">Designation</label>
-                <input
-                  type="text"
-                  value={formDesignation}
-                  onChange={(e) => setFormDesignation(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none"
-                />
+                <input type="text" value={formDesignation} onChange={(e) => setFormDesignation(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
               </div>
 
               <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddOpen(false)}
-                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg"
-                >
+                <button type="button" onClick={() => setIsAddOpen(false)}
+                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button type="submit"
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">
                   Save Employee
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT EMPLOYEE MODAL ── */}
+      {editEmp && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Edit Employee — {editEmp.name}</h3>
+              <button onClick={() => setEditEmp(null)} className="text-slate-400 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleEditSave} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700">Full Name *</label>
+                <input type="text" required value={editName} onChange={(e) => setEditName(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-700">Email *</label>
+                  <input type="email" required value={editEmail} onChange={(e) => setEditEmail(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700">Phone</label>
+                  <input type="text" value={editPhone} onChange={(e) => setEditPhone(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-700">Role</label>
+                  <select value={editRole} onChange={(e) => setEditRole(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none">
+                    <option value="SALES_EXECUTIVE">Sales / Telecaller</option>
+                    <option value="GRAPHIC_DESIGNER">Graphic Designer</option>
+                    <option value="SOCIAL_MEDIA_MANAGER">Social Media Manager</option>
+                    <option value="META_ADS_MANAGER">Meta Ads Manager</option>
+                    <option value="SUPER_ADMIN">Agency Super Admin</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700">Status</label>
+                  <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none">
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="SUSPENDED">Suspended</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-slate-700">Department</label>
+                  <input type="text" value={editDept} onChange={(e) => setEditDept(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700">Designation</label>
+                  <input type="text" value={editDesignation} onChange={(e) => setEditDesignation(e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700">Working Hours</label>
+                <input type="text" value={editHours} onChange={(e) => setEditHours(e.target.value)}
+                  placeholder="10:00 AM - 07:00 PM IST"
+                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button type="button" onClick={() => setEditEmp(null)}
+                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button type="submit" disabled={saving}
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg">
+                  {saving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

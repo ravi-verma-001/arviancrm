@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, Clock, LogIn, CheckCircle2, AlertCircle } from "lucide-react";
+import { Search, Bell, Clock, LogIn, CheckCircle2 } from "lucide-react";
 import { GlobalSearchModal } from "./GlobalSearchModal";
 
 interface HeaderProps {
@@ -14,6 +14,16 @@ interface HeaderProps {
   };
 }
 
+// Role badge colour map
+const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
+  SALES_EXECUTIVE:    { label: "Sales",   cls: "bg-blue-100 text-blue-700" },
+  GRAPHIC_DESIGNER:   { label: "Design",  cls: "bg-purple-100 text-purple-700" },
+  SOCIAL_MEDIA_MANAGER:{ label: "SMM",   cls: "bg-pink-100 text-pink-700" },
+  META_ADS_MANAGER:   { label: "Ads",    cls: "bg-emerald-100 text-emerald-700" },
+  SUPER_ADMIN:        { label: "Admin",  cls: "bg-red-100 text-red-700" },
+  CUSTOM:             { label: "Custom", cls: "bg-slate-100 text-slate-700" },
+};
+
 export function Header({ user }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -22,11 +32,13 @@ export function Header({ user }: HeaderProps) {
   const [attendance, setAttendance] = useState<any>(null);
   const [checkingAttendance, setCheckingAttendance] = useState(false);
   const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
+  const [staffList, setStaffList] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     fetchNotifications();
     fetchAttendance();
+    if (user.role === "SUPER_ADMIN") fetchStaff();
   }, []);
 
   const fetchNotifications = async () => {
@@ -87,21 +99,32 @@ export function Header({ user }: HeaderProps) {
     }
   };
 
-  // Demo Switcher helper
-  const switchAccount = async (email: string) => {
+  // Fetch real staff from database
+  const fetchStaff = async () => {
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/employees");
+      const data = await res.json();
+      // Exclude current admin from the list
+      const others = (data.employees || []).filter((e: any) => e.id !== user.id);
+      setStaffList(others);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Impersonate staff member
+  const switchAccount = async (employeeId: string) => {
+    try {
+      const res = await fetch("/api/auth/impersonate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password: email.includes("admin") ? "admin123" : "password123",
-        }),
+        body: JSON.stringify({ targetUserId: employeeId }),
       });
       if (res.ok) {
         setRoleSwitcherOpen(false);
-        router.refresh();
         window.location.reload();
+      } else {
+        alert("Could not switch account. Please try again.");
       }
     } catch (err) {
       console.error(err);
@@ -248,61 +271,31 @@ export function Header({ user }: HeaderProps) {
                     </p>
                     <span className="text-[9px] bg-red-100 text-red-700 font-bold px-1 rounded">Admin Only</span>
                   </div>
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => switchAccount("rahul@arvianmarketing.com")}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-800">Rahul Sharma</p>
-                        <p className="text-[10px] text-slate-500">Sales Executive (Telecaller 1)</p>
-                      </div>
-                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Sales</span>
-                    </button>
-
-                    <button
-                      onClick={() => switchAccount("priya@arvianmarketing.com")}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-800">Priya Patel</p>
-                        <p className="text-[10px] text-slate-500">Sales Executive (Telecaller 2)</p>
-                      </div>
-                      <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Sales</span>
-                    </button>
-
-                    <button
-                      onClick={() => switchAccount("arjun@arvianmarketing.com")}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-800">Arjun Mehta</p>
-                        <p className="text-[10px] text-slate-500">Graphic Designer</p>
-                      </div>
-                      <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Design</span>
-                    </button>
-
-                    <button
-                      onClick={() => switchAccount("sneha@arvianmarketing.com")}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-800">Sneha Rao</p>
-                        <p className="text-[10px] text-slate-500">Social Media Manager</p>
-                      </div>
-                      <span className="text-[10px] bg-pink-100 text-pink-700 px-1.5 py-0.5 rounded font-bold">SMM</span>
-                    </button>
-
-                    <button
-                      onClick={() => switchAccount("karan@arvianmarketing.com")}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-800">Karan Malhotra</p>
-                        <p className="text-[10px] text-slate-500">Meta Ads Manager</p>
-                      </div>
-                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">Ads</span>
-                    </button>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {staffList.length === 0 ? (
+                      <p className="text-center text-[11px] text-slate-400 py-4">
+                        No other staff members yet.
+                      </p>
+                    ) : (
+                      staffList.map((emp) => {
+                        const badge = ROLE_BADGE[emp.role] || ROLE_BADGE.CUSTOM;
+                        return (
+                          <button
+                            key={emp.id}
+                            onClick={() => switchAccount(emp.id)}
+                            className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition flex items-center justify-between"
+                          >
+                            <div>
+                              <p className="font-semibold text-slate-800">{emp.name}</p>
+                              <p className="text-[10px] text-slate-500">{emp.designation}</p>
+                            </div>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${badge.cls}`}>
+                              {badge.label}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               )}

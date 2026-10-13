@@ -10,7 +10,8 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.js",
-    "test": "node scripts/test-workflows.js"
+    "test": "node scripts/test-workflows.js",
+    "db:clean": "node scripts/clean-database.js"
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
