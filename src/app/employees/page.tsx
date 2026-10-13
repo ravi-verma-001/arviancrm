@@ -11,6 +11,9 @@ import {
   Pencil,
   Trash2,
   X,
+  Eye,
+  EyeOff,
+  KeyRound,
 } from "lucide-react";
 import { formatDateIST } from "@/lib/utils";
 
@@ -28,6 +31,8 @@ export default function EmployeesPage() {
   const [formRole, setFormRole] = useState("SALES_EXECUTIVE");
   const [formDesignation, setFormDesignation] = useState("Sales Representative");
   const [formPhone, setFormPhone] = useState("");
+  const [formPass, setFormPass] = useState("");
+  const [showAddPass, setShowAddPass] = useState(false);
 
   // Edit modal
   const [editEmp, setEditEmp] = useState<any | null>(null);
@@ -39,6 +44,8 @@ export default function EmployeesPage() {
   const [editRole, setEditRole] = useState("");
   const [editStatus, setEditStatus] = useState("");
   const [editHours, setEditHours] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [showNewPass, setShowNewPass] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -75,11 +82,12 @@ export default function EmployeesPage() {
           role: formRole,
           designation: formDesignation,
           phone: formPhone,
+          password: formPass || "password123",
         }),
       });
       if (res.ok) {
         setIsAddOpen(false);
-        setFormName(""); setFormEmail(""); setFormEmpId(""); setFormPhone("");
+        setFormName(""); setFormEmail(""); setFormEmpId(""); setFormPhone(""); setFormPass("");
         fetchEmployees();
       } else {
         const data = await res.json();
@@ -101,6 +109,8 @@ export default function EmployeesPage() {
     setEditRole(emp.role);
     setEditStatus(emp.status);
     setEditHours(emp.workingHours);
+    setNewPass("");
+    setShowNewPass(false);
   };
 
   // ── Save Edit ──────────────────────────────────────────
@@ -121,10 +131,12 @@ export default function EmployeesPage() {
           role: editRole,
           status: editStatus,
           workingHours: editHours,
+          newPassword: newPass || undefined,
         }),
       });
       if (res.ok) {
         setEditEmp(null);
+        setNewPass("");
         fetchEmployees();
       } else {
         const data = await res.json();
@@ -354,6 +366,30 @@ export default function EmployeesPage() {
                   className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
               </div>
 
+              {/* Password Field */}
+              <div className="pt-1 border-t border-slate-100">
+                <label className="block font-semibold text-slate-700 flex items-center gap-1.5">
+                  <KeyRound size={12} className="text-slate-400" />
+                  Login Password
+                </label>
+                <div className="relative mt-1">
+                  <input
+                    type={showAddPass ? "text" : "password"}
+                    value={formPass}
+                    onChange={(e) => setFormPass(e.target.value)}
+                    placeholder="Default: password123 (change recommended)"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400 pr-9"
+                  />
+                  <button type="button" onClick={() => setShowAddPass(!showAddPass)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                    {showAddPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <p className="mt-1 text-[10px] text-amber-600 font-medium">
+                  ⚠️ Employee will login with this password. Share it securely.
+                </p>
+              </div>
+
               <div className="pt-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setIsAddOpen(false)}
                   className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
@@ -438,6 +474,31 @@ export default function EmployeesPage() {
                 <input type="text" value={editHours} onChange={(e) => setEditHours(e.target.value)}
                   placeholder="10:00 AM - 07:00 PM IST"
                   className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400" />
+              </div>
+
+              {/* Reset Password Section */}
+              <div className="pt-2 border-t border-dashed border-slate-200">
+                <label className="block font-semibold text-slate-700 flex items-center gap-1.5">
+                  <KeyRound size={12} className="text-blue-500" />
+                  Reset Login Password
+                  <span className="text-[9px] font-normal text-slate-400 ml-1">(leave blank to keep current)</span>
+                </label>
+                <div className="relative mt-1">
+                  <input
+                    type={showNewPass ? "text" : "password"}
+                    value={newPass}
+                    onChange={(e) => setNewPass(e.target.value)}
+                    placeholder="Enter new password (min 6 chars)"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-400 pr-9"
+                  />
+                  <button type="button" onClick={() => setShowNewPass(!showNewPass)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                    {showNewPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                {newPass && newPass.length < 6 && (
+                  <p className="mt-1 text-[10px] text-red-500">Password must be at least 6 characters.</p>
+                )}
               </div>
 
               <div className="pt-2 flex justify-end gap-2">
