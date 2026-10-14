@@ -6,13 +6,16 @@
   body {
     @apply bg-slate-50 text-slate-900 antialiased selection:bg-blue-600 selection:text-white min-h-screen;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /* Better touch rendering on mobile */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -28,3 +31,24 @@
 .kanban-col {
   min-height: calc(100vh - 280px);
 }
+
+/* Mobile: prevent horizontal scroll on body */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Improve tap targets on mobile */
+@media (max-width: 1024px) {
+  button, a {
+    min-height: 40px;
+  }
+  
+  /* Make notification dropdown full-width on mobile */
+  .notif-dropdown {
+    left: 0;
+    right: 0;
+    width: 100vw;
+  }
+}
+

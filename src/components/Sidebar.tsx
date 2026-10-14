@@ -20,9 +20,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   user: {
@@ -33,12 +33,19 @@ interface SidebarProps {
     employeeId: string;
     department: string;
   };
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (onMobileClose) onMobileClose();
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isAdmin = user.role === "SUPER_ADMIN";
   const isSales = user.role === "SALES_EXECUTIVE";
@@ -46,7 +53,6 @@ export function Sidebar({ user }: SidebarProps) {
   const isSMM = user.role === "SOCIAL_MEDIA_MANAGER";
   const isMediaBuyer = user.role === "META_ADS_MANAGER";
 
-  // Build role-based navigation groups
   const navigation = isAdmin
     ? [
         {
@@ -195,14 +201,14 @@ export function Sidebar({ user }: SidebarProps) {
     }
   };
 
-  return (
+  const sidebarContent = (
     <aside
-      className={`fixed top-0 left-0 z-30 h-screen transition-all duration-300 bg-slate-900 text-slate-200 border-r border-slate-800 flex flex-col ${
+      className={`h-full flex flex-col bg-slate-900 text-slate-200 border-r border-slate-800 transition-all duration-300 ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Brand Header */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800 bg-slate-950">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800 bg-slate-950 shrink-0">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20 text-lg">
@@ -223,13 +229,28 @@ export function Sidebar({ user }: SidebarProps) {
             A
           </div>
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+
+        {/* Mobile: close button | Desktop: collapse button */}
+        <div className="flex items-center gap-1">
+          {/* Mobile close */}
+          {onMobileClose && (
+            <button
+              onClick={onMobileClose}
+              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition"
+              title="Close menu"
+            >
+              <X size={18} />
+            </button>
+          )}
+          {/* Desktop collapse */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:flex text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        </div>
       </div>
 
       {/* Navigation Links */}
@@ -249,7 +270,7 @@ export function Sidebar({ user }: SidebarProps) {
                   <li key={item.name}>
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                         isActive
                           ? "bg-blue-600 text-white shadow-sm"
                           : "text-slate-300 hover:bg-slate-800 hover:text-white"
@@ -268,7 +289,7 @@ export function Sidebar({ user }: SidebarProps) {
       </div>
 
       {/* User Card & Logout */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950">
+      <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0">
         {!collapsed ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5 overflow-hidden">
@@ -309,5 +330,29 @@ export function Sidebar({ user }: SidebarProps) {
         )}
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - always visible on lg+ */}
+      <div className={`hidden lg:flex flex-col fixed top-0 left-0 z-30 h-screen transition-all duration-300 ${collapsed ? "w-20" : "w-64"}`}>
+        {sidebarContent}
+      </div>
+
+      {/* Mobile Sidebar - drawer overlay */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-slate-900/70 backdrop-blur-sm"
+            onClick={onMobileClose}
+          />
+          {/* Drawer */}
+          <div className="lg:hidden fixed top-0 left-0 z-50 h-screen w-72 shadow-2xl">
+            {sidebarContent}
+          </div>
+        </>
+      )}
+    </>
   );
 }

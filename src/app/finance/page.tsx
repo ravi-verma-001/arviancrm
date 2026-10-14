@@ -104,40 +104,42 @@ export default function FinancePage() {
           <span className="text-xs text-slate-500">{financeData?.invoices?.length || 0} records</span>
         </div>
 
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-              <th className="p-3">Invoice Number</th>
-              <th className="p-3">Client Business</th>
-              <th className="p-3">Service Period</th>
-              <th className="p-3">Total Amount</th>
-              <th className="p-3">Received</th>
-              <th className="p-3">Outstanding</th>
-              <th className="p-3">Due Date</th>
-              <th className="p-3">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-medium">
-            {financeData?.invoices?.map((inv: any) => (
-              <tr key={inv.id} className="hover:bg-slate-50">
-                <td className="p-3 font-mono font-bold text-slate-800">{inv.invoiceNumber}</td>
-                <td className="p-3 font-bold text-slate-900">{inv.client?.businessName}</td>
-                <td className="p-3 text-slate-600">{inv.servicePeriod}</td>
-                <td className="p-3 font-bold text-slate-900">{formatINR(inv.invoiceAmount)}</td>
-                <td className="p-3 text-emerald-700">{formatINR(inv.amountReceived)}</td>
-                <td className="p-3 text-amber-600">{formatINR(inv.outstandingAmount)}</td>
-                <td className="p-3 text-slate-500">{formatDateIST(inv.dueDate)}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    inv.paymentStatus === "PAID" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                  }`}>
-                    {inv.paymentStatus}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[640px]">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                <th className="p-3">Invoice Number</th>
+                <th className="p-3">Client Business</th>
+                <th className="p-3">Service Period</th>
+                <th className="p-3">Total Amount</th>
+                <th className="p-3">Received</th>
+                <th className="p-3">Outstanding</th>
+                <th className="p-3">Due Date</th>
+                <th className="p-3">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium">
+              {financeData?.invoices?.map((inv: any) => (
+                <tr key={inv.id} className="hover:bg-slate-50">
+                  <td className="p-3 font-mono font-bold text-slate-800">{inv.invoiceNumber}</td>
+                  <td className="p-3 font-bold text-slate-900">{inv.client?.businessName}</td>
+                  <td className="p-3 text-slate-600">{inv.servicePeriod}</td>
+                  <td className="p-3 font-bold text-slate-900">{formatINR(inv.invoiceAmount)}</td>
+                  <td className="p-3 text-emerald-700">{formatINR(inv.amountReceived)}</td>
+                  <td className="p-3 text-amber-600">{formatINR(inv.outstandingAmount)}</td>
+                  <td className="p-3 text-slate-500">{formatDateIST(inv.dueDate)}</td>
+                  <td className="p-3">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      inv.paymentStatus === "PAID" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                    }`}>
+                      {inv.paymentStatus}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Agency Expenses Breakdown */}
@@ -147,28 +149,30 @@ export default function FinancePage() {
           <span className="text-xs text-slate-500">{financeData?.expenses?.length || 0} recorded items</span>
         </div>
 
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-              <th className="p-3">Category</th>
-              <th className="p-3">Description</th>
-              <th className="p-3">Amount</th>
-              <th className="p-3">Vendor</th>
-              <th className="p-3">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-medium">
-            {financeData?.expenses?.map((exp: any) => (
-              <tr key={exp.id} className="hover:bg-slate-50">
-                <td className="p-3 font-semibold text-slate-800">{exp.category.replace(/_/g, " ")}</td>
-                <td className="p-3 text-slate-700">{exp.description}</td>
-                <td className="p-3 font-bold text-red-600">{formatINR(exp.amount)}</td>
-                <td className="p-3 text-slate-500">{exp.vendor || "—"}</td>
-                <td className="p-3 text-slate-500">{formatDateIST(exp.date)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[480px]">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                <th className="p-3">Category</th>
+                <th className="p-3">Description</th>
+                <th className="p-3">Amount</th>
+                <th className="p-3">Vendor</th>
+                <th className="p-3">Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium">
+              {financeData?.expenses?.map((exp: any) => (
+                <tr key={exp.id} className="hover:bg-slate-50">
+                  <td className="p-3 font-semibold text-slate-800">{exp.category.replace(/_/g, " ")}</td>
+                  <td className="p-3 text-slate-700">{exp.description}</td>
+                  <td className="p-3 font-bold text-red-600">{formatINR(exp.amount)}</td>
+                  <td className="p-3 text-slate-500">{exp.vendor || "—"}</td>
+                  <td className="p-3 text-slate-500">{formatDateIST(exp.date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

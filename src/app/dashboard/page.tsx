@@ -83,12 +83,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Date Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-xl overflow-x-auto text-xs font-medium">
+        <div className="flex items-center gap-1 p-1 bg-slate-200/70 rounded-xl overflow-x-auto text-xs font-medium shrink-0">
           {ranges.map((r) => (
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+              className={`px-2.5 py-1.5 rounded-lg whitespace-nowrap transition ${
                 range === r.value
                   ? "bg-white text-blue-700 shadow-sm font-semibold"
                   : "text-slate-600 hover:text-slate-900"
@@ -507,8 +507,8 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="mt-4 overflow-x-auto -mx-5 px-5">
+              <table className="w-full text-left text-xs min-w-[500px]">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
                     <th className="py-2.5 px-3 font-semibold">Employee ID</th>

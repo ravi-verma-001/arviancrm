@@ -74,50 +74,52 @@ export default function AttendancePage() {
 
       {/* Attendance Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-              <th className="p-3">Staff ID</th>
-              <th className="p-3">Employee Name</th>
-              <th className="p-3">Department</th>
-              <th className="p-3">Check-in Time (IST)</th>
-              <th className="p-3">Check-out Time (IST)</th>
-              <th className="p-3 text-center">Total Working Hours</th>
-              <th className="p-3">Attendance Status</th>
-              <th className="p-3">Notes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-medium">
-            {loading ? (
-              <tr>
-                <td colSpan={8} className="p-8 text-center text-slate-400">Loading attendance logs...</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[680px]">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                <th className="p-3">Staff ID</th>
+                <th className="p-3">Employee Name</th>
+                <th className="p-3">Department</th>
+                <th className="p-3">Check-in Time (IST)</th>
+                <th className="p-3">Check-out Time (IST)</th>
+                <th className="p-3 text-center">Total Working Hours</th>
+                <th className="p-3">Attendance Status</th>
+                <th className="p-3">Notes</th>
               </tr>
-            ) : attendances.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="p-8 text-center text-slate-400">No attendance entries recorded for this date.</td>
-              </tr>
-            ) : (
-              attendances.map((att) => (
-                <tr key={att.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono text-slate-400">{att.user?.employeeId}</td>
-                  <td className="p-3 font-bold text-slate-900">{att.user?.name}</td>
-                  <td className="p-3 text-slate-600">{att.user?.department}</td>
-                  <td className="p-3 font-mono text-slate-800">
-                    {att.checkInTime ? formatDateTimeIST(att.checkInTime) : "—"}
-                  </td>
-                  <td className="p-3 font-mono text-slate-800">
-                    {att.checkOutTime ? formatDateTimeIST(att.checkOutTime) : "Active"}
-                  </td>
-                  <td className="p-3 text-center font-bold text-slate-900">
-                    {att.totalHours > 0 ? `${att.totalHours} hrs` : "In Progress"}
-                  </td>
-                  <td className="p-3">{getStatusBadge(att.status)}</td>
-                  <td className="p-3 text-slate-500 italic max-w-xs truncate">{att.notes || "—"}</td>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-slate-400">Loading attendance logs...</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : attendances.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-slate-400">No attendance entries recorded for this date.</td>
+                </tr>
+              ) : (
+                attendances.map((att) => (
+                  <tr key={att.id} className="hover:bg-slate-50">
+                    <td className="p-3 font-mono text-slate-400">{att.user?.employeeId}</td>
+                    <td className="p-3 font-bold text-slate-900">{att.user?.name}</td>
+                    <td className="p-3 text-slate-600">{att.user?.department}</td>
+                    <td className="p-3 font-mono text-slate-800">
+                      {att.checkInTime ? formatDateTimeIST(att.checkInTime) : "—"}
+                    </td>
+                    <td className="p-3 font-mono text-slate-800">
+                      {att.checkOutTime ? formatDateTimeIST(att.checkOutTime) : "Active"}
+                    </td>
+                    <td className="p-3 text-center font-bold text-slate-900">
+                      {att.totalHours > 0 ? `${att.totalHours} hrs` : "In Progress"}
+                    </td>
+                    <td className="p-3">{getStatusBadge(att.status)}</td>
+                    <td className="p-3 text-slate-500 italic max-w-xs truncate">{att.notes || "—"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

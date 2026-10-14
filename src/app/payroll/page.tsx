@@ -82,50 +82,52 @@ export default function PayrollPage() {
 
       {/* Payroll Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-              <th className="p-3">Staff ID</th>
-              <th className="p-3">Employee Name</th>
-              <th className="p-3">Department & Designation</th>
-              <th className="p-3">Base Salary</th>
-              <th className="p-3">Allowances</th>
-              <th className="p-3">Deductions</th>
-              <th className="p-3 font-bold text-slate-900">Net Pay</th>
-              <th className="p-3">Payroll Period</th>
-              <th className="p-3">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-medium">
-            {loading ? (
-              <tr>
-                <td colSpan={9} className="p-8 text-center text-slate-400">Loading payroll data...</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[700px]">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                <th className="p-3">Staff ID</th>
+                <th className="p-3">Employee Name</th>
+                <th className="p-3">Department &amp; Designation</th>
+                <th className="p-3">Base Salary</th>
+                <th className="p-3">Allowances</th>
+                <th className="p-3">Deductions</th>
+                <th className="p-3 font-bold text-slate-900">Net Pay</th>
+                <th className="p-3">Payroll Period</th>
+                <th className="p-3">Status</th>
               </tr>
-            ) : (
-              payrollData?.salaryRecords?.map((rec: any) => (
-                <tr key={rec.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono text-slate-400">{rec.user?.employeeId}</td>
-                  <td className="p-3 font-bold text-slate-900">{rec.user?.name}</td>
-                  <td className="p-3 text-slate-600">
-                    {rec.user?.designation} <span className="text-[11px] text-slate-400">({rec.user?.department})</span>
-                  </td>
-                  <td className="p-3 text-slate-700">{formatINR(rec.monthlySalary)}</td>
-                  <td className="p-3 text-emerald-700">+{formatINR(rec.allowances)}</td>
-                  <td className="p-3 text-red-600">-{formatINR(rec.deductions)}</td>
-                  <td className="p-3 font-extrabold text-slate-900 text-sm">
-                    {formatINR(rec.netSalary)}
-                  </td>
-                  <td className="p-3 text-slate-600">{rec.payrollPeriod}</td>
-                  <td className="p-3">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                      {rec.paymentStatus}
-                    </span>
-                  </td>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium">
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-slate-400">Loading payroll data...</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                payrollData?.salaryRecords?.map((rec: any) => (
+                  <tr key={rec.id} className="hover:bg-slate-50">
+                    <td className="p-3 font-mono text-slate-400">{rec.user?.employeeId}</td>
+                    <td className="p-3 font-bold text-slate-900">{rec.user?.name}</td>
+                    <td className="p-3 text-slate-600">
+                      {rec.user?.designation} <span className="text-[11px] text-slate-400">({rec.user?.department})</span>
+                    </td>
+                    <td className="p-3 text-slate-700">{formatINR(rec.monthlySalary)}</td>
+                    <td className="p-3 text-emerald-700">+{formatINR(rec.allowances)}</td>
+                    <td className="p-3 text-red-600">-{formatINR(rec.deductions)}</td>
+                    <td className="p-3 font-extrabold text-slate-900 text-sm">
+                      {formatINR(rec.netSalary)}
+                    </td>
+                    <td className="p-3 text-slate-600">{rec.payrollPeriod}</td>
+                    <td className="p-3">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        {rec.paymentStatus}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
